@@ -1,16 +1,17 @@
 package io.ripc.protocol.tcp;
 
+import io.ripc.core.ConnectionEventListener;
 import org.reactivestreams.Publisher;
 
 /**
- * A {@code Connection} provides a reader for inbound data and a writer for outbound.
+ * A {@code Connection} provides a getReader for inbound data and a setWriter for outbound.
  */
 public interface TcpConnection {
 
-	TcpConnection eventHandler(TcpConnectionEventHandler eventHandler);
+	Publisher<?> getReader();
 
-	Publisher<?> reader();
+	void setWriter(Publisher<?> writer);
 
-	TcpConnection writer(Publisher<?> sink);
+	TcpConnection addListener(ConnectionEventListener listener);
 
 }

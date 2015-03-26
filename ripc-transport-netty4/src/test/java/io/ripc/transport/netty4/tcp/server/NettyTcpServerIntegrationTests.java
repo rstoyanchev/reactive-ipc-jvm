@@ -28,7 +28,7 @@ public class NettyTcpServerIntegrationTests {
 		TcpConnectionEventHandler eventHandler = new AbstractTcpConnectionEventHandler() {
 			@Override
 			public void onOpen(TcpConnection connection) {
-				connection.reader()
+				connection.getReader()
 				          .subscribe(new Subscriber<Object>() {
 					          Subscription subscription;
 
@@ -45,7 +45,7 @@ public class NettyTcpServerIntegrationTests {
 					          @Override
 					          public void onNext(Object o) {
 						          LOG.info("got msg: {}", o);
-						          connection.writer(Publishers.just(Unpooled.wrappedBuffer("Hello World!".getBytes())));
+						          connection.setWriter(Publishers.just(Unpooled.wrappedBuffer("Hello World!".getBytes())));
 						          subscription.request(1);
 					          }
 

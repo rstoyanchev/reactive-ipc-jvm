@@ -42,16 +42,16 @@ public class NettyTcpServerConnection implements TcpConnection {
 	}
 
 	@Override
-	public Publisher<?> reader() {
+	public Publisher<?> getReader() {
 		return readPublisher;
 	}
 
 	@Override
-	public TcpConnection writer(Publisher<?> sink) {
-		DemandCalculator demandCalculator = DemandCalculator.class.isAssignableFrom(sink.getClass())
-		                                    ? (DemandCalculator) sink
+	public TcpConnection setWriter(Publisher<?> writer) {
+		DemandCalculator demandCalculator = DemandCalculator.class.isAssignableFrom(writer.getClass())
+		                                    ? (DemandCalculator) writer
 		                                    : null;
-		sink.subscribe(new WriteSubscriber(demandCalculator));
+		writer.subscribe(new WriteSubscriber(demandCalculator));
 		return this;
 	}
 
