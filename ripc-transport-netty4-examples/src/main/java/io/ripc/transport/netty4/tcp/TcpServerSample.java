@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.ripc.core.Flushable;
+import io.ripc.core.WritePublisher;
 import io.ripc.protocol.tcp.SimpleTcpInterceptor;
 import io.ripc.protocol.tcp.TcpConnection;
 import org.reactivestreams.Processor;
@@ -34,7 +34,7 @@ public class TcpServerSample {
 					CompletionPublisher completionPublisher = new CompletionPublisher();
 					EchoProcessor echoProcessor = new EchoProcessor(completionPublisher);
 					connection.reader().subscribe(echoProcessor);
-					connection.writer(echoProcessor);
+					connection.writer(WritePublisher.adapt(echoProcessor).withFlushCount(1));
 					return completionPublisher;
 				});
 
@@ -83,8 +83,6 @@ public class TcpServerSample {
 
 		private Subscriber<? super ByteBuf> writeSubscriber;
 
-		private Flushable flushable;
-
 
 		private EchoProcessor(CompletionPublisher publisher) {
 			this.completionPublisher = publisher;
@@ -106,7 +104,6 @@ public class TcpServerSample {
 			else {
 				logger.debug("Echoing message: " + message);
 				this.writeSubscriber.onNext(Unpooled.buffer().writeBytes(("Hello " + message).getBytes(charset)));
-				this.flushable.flush();
 			}
 		}
 
@@ -121,7 +118,6 @@ public class TcpServerSample {
 		@Override
 		public void subscribe(Subscriber<? super ByteBuf> subscriber) {
 			this.writeSubscriber = subscriber;
-			this.flushable = (subscriber instanceof Flushable ? (Flushable) subscriber : new NoOpFlushable());
 			this.writeSubscriber.onSubscribe(new Subscription() {
 				@Override
 				public void request(long n) {
@@ -134,14 +130,6 @@ public class TcpServerSample {
 				}
 			});
 
-		}
-	}
-
-	private static class NoOpFlushable implements Flushable {
-
-		@Override
-		public void flush() {
-			// no-op
 		}
 	}
 
